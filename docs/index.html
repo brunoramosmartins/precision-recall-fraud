@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Not All Errors Cost the Same — Precision@Recall for Fraud Detection</title>
+  <meta name="description" content="How Bayes' theorem explains why precision@recall is a more honest evaluation metric than F1 when the cost of missing a fraud far exceeds the cost of a false alarm." />
+  <meta name="author" content="Bruno" />
+
+  <!-- Open Graph (LinkedIn preview) -->
+  <meta property="og:title" content="Not All Errors Cost the Same" />
+  <meta property="og:description" content="Bayesian foundations of evaluation metrics for fraud detection — from F1 to Precision@Recall." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://<your-username>.github.io/precision-recall-fraud/" />
+
+  <style>
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      max-width: 760px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.75;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.25rem; color: #444; font-weight: normal; margin-top: 0; }
+    .status {
+      display: inline-block;
+      background: #e8f4e8;
+      border: 1px solid #b0d8b0;
+      border-radius: 4px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.85rem;
+      font-family: monospace;
+      margin-top: 1rem;
+    }
+    a { color: #0056b3; }
+    code { font-family: monospace; background: #f0f0ee; padding: 0.1em 0.3em; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Not All Errors Cost the Same</h1>
+  <h2>Bayesian Foundations of Evaluation Metrics for Fraud Detection — from F1 to Precision@Recall</h2>
+
+  <p class="status">Article in progress — Phase 0</p>
+
+  <p>
+    A technical case interview revealed that F1 had been chosen on autopilot —
+    without consciously connecting it to business cost, error asymmetry, or threshold choice.
+    This article is the study that should have happened before that interview.
+  </p>
+
+  <p>
+    The central argument: Precision and Recall are conditional probabilities.
+    Their relationship is governed by Bayes' theorem. Class imbalance is the base rate problem in disguise.
+    F1 treats all errors as equally costly — Precision@recall does not.
+    In fraud detection, the difference matters.
+  </p>
+
+  <p>
+    <strong>Article coming soon.</strong> Follow progress on
+    <a href="https://github.com/<your-username>/precision-recall-fraud">GitHub</a>.
+  </p>
+
+  <hr />
+  <p style="font-size: 0.85rem; color: #666;">
+    Code: <a href="https://github.com/<your-username>/precision-recall-fraud/blob/main/LICENSE">MIT License</a> ·
+    Article text: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+  </p>
+</body>
+</html>

@@ -1,0 +1,84 @@
+# Project configuration
+# All experiments and scripts must read parameters from here — no hardcoded values.
+
+# ─── Reproducibility ──────────────────────────────────────────────────────────
+random_seed: 42
+numpy_seed: 42
+sklearn_seed: 42
+
+# ─── Dataset ──────────────────────────────────────────────────────────────────
+dataset:
+  # "kaggle" | "synthetic" | "both"
+  source: both
+
+  kaggle:
+    raw_path: data/raw/creditcard.csv
+    processed_path: data/processed/creditcard_processed.parquet
+
+  synthetic:
+    n_samples: 100000
+    fraud_rate: 0.001        # 0.1% — mirrors Kaggle dataset
+    n_features: 20
+    n_informative: 10
+    path: data/synthetic/synthetic_fraud.csv
+
+  test_size: 0.2
+  stratify: true
+  cv_folds: 5
+
+# ─── Thresholds ───────────────────────────────────────────────────────────────
+thresholds:
+  range_start: 0.01
+  range_end:   0.99
+  n_steps:     99
+
+# ─── Recall targets for Precision@Recall ─────────────────────────────────────
+recall_targets: [0.75, 0.80, 0.85, 0.90]
+
+# ─── Cost matrix (USD) ────────────────────────────────────────────────────────
+costs:
+  false_positive: 5.0     # Customer friction cost per blocked legitimate transaction
+  false_negative: 200.0   # Fraud loss per missed fraudulent transaction
+
+# ─── Figure settings ──────────────────────────────────────────────────────────
+figures:
+  output_dir: figures/
+  dpi: 300
+  format: png
+  style: seaborn-v0_8-whitegrid
+  figsize: [10, 6]
+
+  # Colorblind-friendly palette (Wong 2011)
+  colors:
+    blue:   "#0072B2"
+    orange: "#E69F00"
+    green:  "#009E73"
+    red:    "#D55E00"
+    purple: "#CC79A7"
+    yellow: "#F0E442"
+    sky:    "#56B4E9"
+    black:  "#000000"
+
+  # Consistent model colors across all figures
+  model_colors:
+    logistic_regression: "#0072B2"
+    random_forest:       "#009E73"
+    weak_classifier:     "#D55E00"
+    dummy:               "#CC79A7"
+
+# ─── Models ───────────────────────────────────────────────────────────────────
+models:
+  logistic_regression:
+    C: 1.0
+    max_iter: 1000
+    solver: lbfgs
+    class_weight: balanced
+
+  random_forest:
+    n_estimators: 100
+    max_depth: 10
+    class_weight: balanced
+
+  weak_classifier:
+    max_depth: 2
+    class_weight: balanced
