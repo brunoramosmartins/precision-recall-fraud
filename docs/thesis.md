@@ -85,7 +85,7 @@ After reading this article, you will:
 
 | Format | Output | Channel | Priority |
 |--------|--------|---------|----------|
-| Markdown | `article/metrics-that-matter.md` | Personal portfolio site (GitHub Pages, rendered via custom Python pipeline) | Primary |
+| Markdown | `article/metrics-that-matter.md` | [Personal portfolio site](https://brunoramosmartins.github.io) (GitHub Pages, rendered via custom Python pipeline) | Primary |
 | HTML | `docs/index.html` | This repository's GitHub Pages (landing page / project card — links to full article) | Secondary |
 | LaTeX / PDF | `article/latex/metrics-that-matter.tex` | Repository download + future academic submissions | Optional |
 | LinkedIn post | Summary only — no full article | LinkedIn | Promotion |

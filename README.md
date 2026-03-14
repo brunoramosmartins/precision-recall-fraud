@@ -51,7 +51,7 @@ precision-recall-fraud/
 
 ```bash
 # 1. Clone
-git clone https://github.com/<your-username>/precision-recall-fraud.git
+git clone https://github.com/brunoramosmartins/precision-recall-fraud.git
 cd precision-recall-fraud
 
 # 2. Create a virtual environment and install dependencies
@@ -74,7 +74,7 @@ All random seeds are controlled by `config.yaml`. The synthetic dataset experime
 
 | Format | Source | Purpose |
 |--------|--------|---------|
-| Markdown | `article/metrics-that-matter.md` | Canonical source — rendered by the [portfolio site](https://github.com/<your-username>) |
+| Markdown | `article/metrics-that-matter.md` | Canonical source — rendered by the [portfolio site](https://brunoramosmartins.github.io) |
 | HTML (landing page) | `docs/index.html` | Repository GitHub Pages — project summary and link to full article |
 | LaTeX / PDF | `article/latex/` | Optional academic version, generated via Pandoc from the Markdown source |
 
