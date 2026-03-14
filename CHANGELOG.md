@@ -28,6 +28,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased] — Phase 1: Theoretical Foundation
+
+### Added
+- `notes/phase1-theory.md` — Working study notes with full derivations: conditional
+  probability, Bayes in metric language, optimal threshold under asymmetric costs,
+  F1 harmonic mean, F-beta family, and AM-HM inequality proof.
+- `docs/theory-summary.md` — Article-ready summary of all four theoretical blocks,
+  with connections to the article section structure.
+
+### Fixed
+- Replaced all `<your-username>` placeholders with `brunoramosmartins` across
+  `README.md`, `docs/index.html`, and `docs/thesis.md`.
+
+---
+
 *Tags correspond to phase milestones:*
 - `v0.0-init` — Phase 0 merged to main
 - `v0.1-theory` — Phase 1 merged to main
