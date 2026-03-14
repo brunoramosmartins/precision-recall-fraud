@@ -43,6 +43,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased] — Phase 2: Metric Landscape
+
+### Added
+- `notes/phase2-metrics.md` — Working study notes covering: ROC curve (definition,
+  AUC-ROC probabilistic interpretation, SDT historical origin, imbalance caveat),
+  PR curve (definition, AUC-PR, base rate baseline, Davis & Goadrich relationship
+  with ROC), Precision@r recall (formal definition, interpolation, r as a business
+  parameter), F1 vs Precision@recall distinction (constrained vs unconstrained
+  optimization, model ranking reversal example), and metric selection framework.
+- `docs/metric-selection-framework.md` — Article-ready decision framework:
+  decision table by condition, fraud detection column, cost-to-threshold-to-recall
+  chain, common mistakes, visual flowchart, and metric reference table.
+
+---
+
 *Tags correspond to phase milestones:*
 - `v0.0-init` — Phase 0 merged to main
 - `v0.1-theory` — Phase 1 merged to main
