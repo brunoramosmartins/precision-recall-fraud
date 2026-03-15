@@ -96,8 +96,8 @@ All random seeds are controlled by `config.yaml`. The synthetic dataset experime
 | Phase 0 | Foundation & Project Setup | Complete |
 | Phase 1 | Theoretical Foundation | Complete |
 | Phase 2 | Metric Landscape | Complete |
-| Phase 3 | Experiments & Code | In progress |
-| Phase 4 | Article Writing | Pending |
+| Phase 3 | Experiments & Code | Complete |
+| Phase 4 | Article Writing | In progress |
 | Phase 5 | Review & Polish | Pending |
 | Phase 6 | Publishing | Pending |
 
