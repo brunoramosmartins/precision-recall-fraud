@@ -58,6 +58,35 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased] — Phase 3: Experiments & Reproducible Code
+
+### Added
+- `src/__init__.py` — makes src/ a proper Python package.
+- `src/data.py` — dataset loading (Kaggle + synthetic), preprocessing pipeline,
+  stratified split, cross-validation splitter, and dataset statistics.
+- `src/metrics.py` — Precision@r recall with linear interpolation, cost-optimal
+  threshold derivation, per-threshold metric computation, and threshold sweep.
+- `src/models.py` — training utilities for DummyClassifier, Logistic Regression,
+  Random Forest, and weak decision tree; all parameters from config.yaml.
+- `src/plotting.py` — metric bar chart, ROC curves, PR curves, threshold sweep,
+  Precision@Recall bar chart, and model ranking heatmap; all styles from config.yaml.
+- `scripts/experiment_a_accuracy_trap.py` — DummyClassifier vs Logistic Regression;
+  metric comparison bar chart.
+- `scripts/experiment_b_roc_vs_pr.py` — three models; ROC and PR curves side by side.
+- `scripts/experiment_c_threshold_selection.py` — threshold sweep; confusion
+  matrices at default, F1-optimal, and cost-optimal thresholds.
+- `scripts/experiment_d_precision_at_recall.py` — Precision and FP/FN counts at
+  recall targets 0.75, 0.80, 0.85, 0.90 with expected cost calculation.
+- `scripts/experiment_e_ranking_comparison.py` — five model variants ranked by F1,
+  AUC-PR, and Precision@r; divergence identification.
+- `scripts/run_all.py` — end-to-end pipeline runner; regenerates all figures.
+- `notebooks/exploration.ipynb` — exploratory notebook skeleton (clearly labeled
+  as non-canonical).
+- `docs/experiments-summary.md` — per-experiment summary with theoretical
+  connections and result tables (to be filled in after running).
+
+---
+
 *Tags correspond to phase milestones:*
 - `v0.0-init` — Phase 0 merged to main
 - `v0.1-theory` — Phase 1 merged to main
