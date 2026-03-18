@@ -14,17 +14,17 @@ Fraud detection is an imbalanced classification problem in which two types of er
 
 ## 1. Introduction
 
-A few months ago I was reviewing the evaluation setup for a fraud detection model. The model had been trained, cross-validated, and ranked using F1. The F1 score was competitive. The model was deployed.
+The motivation for this article emerged from a technical interview centered on a fraud detection case. The format was straightforward: at each stage of building a solution, it was necessary to explain what to do, how to do it, and why.
 
-Later, in a different conversation — the kind of technical discussion that begins casually and ends with you staring at a whiteboard — someone asked: *"Why F1? What are you actually assuming when you use it?"*
+This type of problem exposes an important gap. When preparing for roles in machine learning, it is common to focus heavily on algorithms, hyperparameter tuning, and optimization techniques. There is a substantial amount of theory to cover, and much of the learning process revolves around understanding model behavior and improving performance. However, when the problem is presented in a more realistic, contextualized setting, this “checklist-driven” approach often breaks down.
 
-I had no rigorous answer. F1 was the metric on the checklist. It combined precision and recall into a single number. It worked.
+At one point in the interview, a seemingly simple question was asked: among several evaluation metrics, which one would you choose and why. The answer was based on my knowledge at the time, but it lacked depth. In retrospect, the issue was not the choice itself, but the absence of an explicit reasoning process. The metric selection was largely automatic, without a clear articulation of the assumptions being made.
 
-That conversation led to this article.
+This realization motivated this article.
 
-The question is not whether F1 is a bad metric. It is whether F1 is an *honest* metric in a specific context: binary classification under severe class imbalance where the two types of errors carry asymmetric costs. In fraud detection, a false negative — approving a fraudulent transaction — typically costs an order of magnitude more than a false positive — blocking a legitimate one. F1 weights these two error types equally by construction. That implicit assumption is almost never stated and almost never true.
+The question is not whether F1 is a bad metric. It is whether F1 is an *honest* metric in a specific context: binary classification under severe class imbalance, where the two types of errors carry asymmetric costs. In fraud detection, a false negative — approving a fraudulent transaction — typically costs an order of magnitude more than a false positive — blocking a legitimate one. F1 weights these two error types equally by construction. That implicit assumption is rarely made explicit and, in practice, is rarely valid.
 
-This article makes that assumption explicit, derives what the right metric *should* look like under asymmetric costs, and shows empirically that the choice of metric changes model rankings and deployment decisions in ways that matter.
+This article makes those assumptions explicit, derives what the appropriate metric should look like under asymmetric costs, and shows empirically that the choice of metric changes model rankings and deployment decisions in ways that materially affect outcomes.
 
 ### What drives this article
 
