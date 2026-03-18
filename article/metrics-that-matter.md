@@ -48,7 +48,7 @@ Most practitioners encounter the confusion matrix early in their training, usual
 
 ### 2.1 The four cells as events
 
-Let $Y \in \{0, 1\}$ be the true label — 1 for fraud, 0 for legitimate — and $\hat{Y} \in \{0, 1\}$ the model's prediction. The four cells of the confusion matrix correspond to the four intersections of the event space $\{Y = 0, Y = 1\} \times \{\hat{Y} = 0, \hat{Y} = 1\}$:
+Let \(Y \in \left\{0, 1\right\}\) be the true label — 1 for fraud, 0 for legitimate — and \(\hat{Y} \in \left\{0, 1\right\}\) the model's prediction. The four cells of the confusion matrix correspond to the four intersections of the event space \(\left\{Y = 0, Y = 1\right\} \times \left\{\hat{Y} = 0, \hat{Y} = 1\right\}\):
 
 | | Predicted: Fraud ($\hat{Y}=1$) | Predicted: Legitimate ($\hat{Y}=0$) |
 |---|---|---|
@@ -134,7 +134,7 @@ Every binary prediction system implicitly or explicitly encodes costs for each c
 - **False Negative ($C_{FN}$)**: A fraud is approved. The loss falls on the institution (or the cardholder, depending on the liability regime). Typical costs include the transaction amount, dispute handling, chargeback fees, and reputational damage.
 - **False Positive ($C_{FP}$)**: A legitimate transaction is blocked. The immediate cost is the lost transaction revenue. The indirect cost is customer friction, potential account abandonment, and lost relationship value.
 
-Concretely: if the average transaction value at risk in a fraud is $\$500$ and the cost of a false alarm (investigation + customer service + lost transaction value) is $\$15$, then $C_{FN} \approx \$500$ and $C_{FP} \approx \$15$. The ratio is approximately 33:1.
+Concretely: if the average transaction value at risk in a fraud is \$500 and the cost of a false alarm (investigation + customer service + lost transaction value) is \$15, then $C_{FN} \approx 500$ and $C_{FP} \approx 15$. The ratio is approximately 33:1.
 
 These numbers are illustrative. The exact values vary by institution, card network rules, and liability agreements. What matters for this derivation is the **ratio** $C_{FN} / C_{FP}$, not the absolute values.
 
@@ -157,7 +157,7 @@ Solving for $\hat{p}(x)$:
 
 $$\hat{p}(x) > \frac{C_{FP}}{C_{FP} + C_{FN}} \equiv \tau^*$$
 
-The optimal threshold is the ratio of the false positive cost to the total error cost. With $C_{FN} = \$500$ and $C_{FP} = \$15$:
+The optimal threshold is the ratio of the false positive cost to the total error cost. With $C_{FN} = 500$ and $C_{FP} = 15$:
 
 $$\tau^* = \frac{15}{15 + 500} \approx 0.029$$
 
