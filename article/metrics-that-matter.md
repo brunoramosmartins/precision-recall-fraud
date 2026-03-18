@@ -48,7 +48,7 @@ Most practitioners encounter the confusion matrix early in their training, usual
 
 ### 2.1 The four cells as events
 
-Let \(Y \in \left\{0, 1\right\}\) be the true label — 1 for fraud, 0 for legitimate — and \(\hat{Y} \in \left\{0, 1\right\}\) the model's prediction. The four cells of the confusion matrix correspond to the four intersections of the event space \(\left\{Y = 0, Y = 1\right\} \times \left\{\hat{Y} = 0, \hat{Y} = 1\right\}\):
+Let $Y \in \lbrace 0, 1 \rbrace$ be the true label — 1 for fraud, 0 for legitimate — and $\hat{Y} \in \lbrace 0, 1 \rbrace$ the model's prediction. The four cells of the confusion matrix correspond to the four intersections of the event space $\lbrace Y = 0, Y = 1 \rbrace \times \lbrace \hat{Y} = 0, \hat{Y} = 1 \rbrace$:
 
 | | Predicted: Fraud ($\hat{Y}=1$) | Predicted: Legitimate ($\hat{Y}=0$) |
 |---|---|---|
@@ -391,7 +391,7 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 
 **Theoretical claim**: Different business contexts imply different recall requirements, and the precision achievable at each requirement is a model property that should be evaluated explicitly.
 
-**Setup**: A `LogisticRegression` and a `RandomForestClassifier` are evaluated at multiple recall targets $r \in \{0.70, 0.80, 0.90, 0.95\}$. For each model and each target, Precision@$r$ is computed. The trade-off between Recall target and achievable Precision is shown as a bar chart.
+**Setup**: A `LogisticRegression` and a `RandomForestClassifier` are evaluated at multiple recall targets $r \in \lbrace 0.70, 0.80, 0.90, 0.95 \rbrace$. For each model and each target, Precision@$r$ is computed. The trade-off between Recall target and achievable Precision is shown as a bar chart.
 
 **Figure**:
 
@@ -409,7 +409,7 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 
 **Theoretical claim**: Ranking models by F1 and ranking them by Precision@$r$ can produce different orderings. When a recall floor is fixed by the business, the F1-based ranking may recommend the wrong model.
 
-**Setup**: Four models (`DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, `DecisionTreeClassifier`) are ranked by multiple metrics: Accuracy, AUC-ROC, AUC-PR, F1, and Precision@$r$ for $r \in \{0.70, 0.80, 0.90\}$. Rankings are displayed as a heatmap.
+**Setup**: Four models (`DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, `DecisionTreeClassifier`) are ranked by multiple metrics: Accuracy, AUC-ROC, AUC-PR, F1, and Precision@$r$ for $r \in \lbrace 0.70, 0.80, 0.90 \rbrace$. Rankings are displayed as a heatmap.
 
 **Figure**:
 
