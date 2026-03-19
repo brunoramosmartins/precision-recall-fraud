@@ -65,11 +65,12 @@ def run(config: dict) -> dict:
 
     # --- Figures ---
     print("\nGenerating figures...")
+    n_samples = len(y_test) + len(y_train)
     fig_roc = plot_roc_curves(
         model_data,
         config,
         title="ROC Curves",
-        subtitle="Model differences appear compressed in ROC space under class imbalance",
+        subtitle=f"Three classifiers on synthetic fraud data (n={n_samples:,}, fraud rate = {base_rate:.1%})",
     )
     save_figure(fig_roc, "exp_b_roc_curves", config)
 
@@ -78,8 +79,8 @@ def run(config: dict) -> dict:
         base_rate,
         config,
         recall_targets=config["recall_targets"],
-        title="Precision–Recall Curves",
-        subtitle="Model separation is clearly visible in PR space",
+        title="Precision\u2013Recall Curves",
+        subtitle="Same classifiers evaluated in Precision\u2013Recall space",
     )
     save_figure(fig_pr, "exp_b_pr_curves", config)
 

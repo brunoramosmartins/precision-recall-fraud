@@ -84,8 +84,8 @@ def run(config: dict, model=None) -> None:
         recall_targets,
         results,
         config,
-        title="Precision@Recall — Business Trade-off",
-        subtitle="Higher recall requirement → lower precision → more false alarms",
+        title="Precision@Recall",
+        subtitle="Precision and error counts at each recall operating point",
     )
     save_figure(fig, "exp_d_precision_at_recall", config)
 

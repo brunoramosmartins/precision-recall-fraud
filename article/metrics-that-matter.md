@@ -8,7 +8,7 @@
 
 ## Abstract
 
-Fraud detection is an imbalanced classification problem in which two types of errors carry fundamentally different consequences: missing a fraud costs far more than blocking a legitimate transaction. Despite this asymmetry, F1 score — which treats both error types as equally costly — remains the default evaluation metric in most practitioner workflows. This article argues that F1 is not wrong, but that its assumptions are rarely made explicit; and that when those assumptions are violated, it produces misleading model rankings. Starting from a probabilistic reading of the confusion matrix, we derive precision and recall as conditional probabilities and connect them to Bayes' theorem. We show that class imbalance is not a data problem but a base rate problem, and that the optimal decision threshold follows directly from the ratio of error costs. We then map the full metric landscape — ROC curves, Precision-Recall curves, and Precision@Recall — showing that each metric encodes a different assumption about the operating context. A suite of reproducible experiments on both synthetic and real fraud data confirms that metric choice changes model rankings, that the default threshold of 0.5 is rarely optimal, and that Precision@Recall is the most operationally honest metric when a business recall target is defined. The article closes with a decision framework: a set of practical questions whose answers lead unambiguously to the right metric for a given deployment context.
+Fraud detection is an imbalanced classification problem in which two types of errors carry fundamentally different consequences: missing a fraud costs far more than blocking a legitimate transaction. Despite this asymmetry, F1 score — which treats both error types as equally costly — remains the default evaluation metric in most practitioner workflows. This article argues that F1 is not wrong, but that its assumptions are rarely made explicit; and that when those assumptions are violated, it produces misleading model rankings. Starting from a probabilistic reading of the confusion matrix, we derive precision and recall as conditional probabilities and connect them to Bayes' theorem. We show that class imbalance is not a data problem but a base rate problem, and that the optimal decision threshold follows directly from the ratio of error costs. We then map the full metric landscape — ROC curves, Precision-Recall curves, and Precision@Recall — showing that each metric encodes a different assumption about the operating context. A suite of reproducible experiments on a synthetic fraud dataset (100,000 transactions, 0.1% fraud rate) confirms that metric choice changes model rankings, that the default threshold of 0.5 is rarely optimal, and that Precision@Recall is the most operationally honest metric when a business recall target is defined. The article closes with a decision framework: a set of practical questions whose answers lead unambiguously to the right metric for a given deployment context.
 
 ---
 
@@ -315,7 +315,7 @@ The distinction matters for model ranking. Section 9 (Experiment E) demonstrates
 
 ## 9. Experiments
 
-The following experiments were conducted on a synthetic imbalanced dataset and, where noted, on the public Kaggle Credit Card Fraud dataset. All code, configuration, and figures are reproducible by running `python scripts/run_all.py` from the repository root with a correctly configured environment. Seeds, hyperparameters, and dataset paths are specified in `config.yaml`.
+The following experiments were conducted on a synthetic imbalanced dataset (n = 100,000; 20 features, 5 informative; fraud rate = 0.1%). All code, configuration, and figures are reproducible by running `python scripts/run_all.py` from the repository root with a correctly configured environment. Seeds, hyperparameters, cost parameters, and dataset settings are specified in `config.yaml`.
 
 All experiments use the same dataset split: 80% training, 20% test, stratified by class. Random seeds are fixed throughout. Models are trained on the training set; all metrics are reported on the held-out test set.
 
@@ -325,41 +325,41 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 
 **Theoretical claim**: On a severely imbalanced dataset, a degenerate classifier (predict always-negative) achieves very high accuracy but zero recall. Accuracy is therefore an invalid evaluation metric for fraud detection.
 
-**Setup**: A `DummyClassifier` (always predicts the majority class) and a `LogisticRegression` model are evaluated on the synthetic fraud dataset ($\pi \approx 0.001$). Metrics reported: Accuracy, Precision, Recall, F1.
+**Setup**: A `DummyClassifier` (always predicts the majority class) and a `LogisticRegression` model are evaluated on the synthetic fraud dataset (n = 100,000; fraud rate = 0.1%). Six metrics are reported: Accuracy, Precision, Recall, F1, AUC-ROC, and AUC-PR.
 
 **Figure**:
 
-![Experiment A: The Accuracy Trap — comparing DummyClassifier vs LogisticRegression across Accuracy, Precision, Recall, and F1.](../figures/exp_a_accuracy_trap.png)
+![Experiment A: The Accuracy Trap — comparing DummyClassifier vs LogisticRegression across six evaluation metrics.](../figures/exp_a_accuracy_trap.png)
 
-*Figure 1. Bar chart comparing a degenerate DummyClassifier (always predicts the majority class) with a LogisticRegression model on four metrics. The DummyClassifier achieves near-perfect accuracy by predicting "legitimate" for every transaction, while achieving zero recall and zero F1. LogisticRegression sacrifices a small amount of accuracy to achieve non-trivial recall and F1. Accuracy hides the DummyClassifier's complete failure; F1 and Recall reveal it.*
+*Figure 1. Bar chart comparing a DummyClassifier (always predicts the majority class) with a LogisticRegression model on six metrics. The DummyClassifier achieves Accuracy = 0.999 but Precision, Recall, and F1 are all zero (highlighted with labelled annotations). Its AUC-ROC is 0.500 (random chance) and its AUC-PR matches the base rate (0.001). LogisticRegression sacrifices accuracy (0.926) in exchange for meaningful Recall (0.850) and AUC-PR (0.142).*
 
-**Observation**: The DummyClassifier achieves accuracy close to $1 - \pi \approx 0.999$ while achieving Precision = 0, Recall = 0, and F1 = 0. The LogisticRegression model accepts a marginal reduction in accuracy in exchange for meaningful Recall and F1. Any metric that assigns a competitive score to the DummyClassifier is invalid for this task.
+**Observation**: The DummyClassifier achieves accuracy close to $1 - \pi \approx 0.999$ while achieving Precision = 0, Recall = 0, and F1 = 0. Its AUC-ROC of 0.500 correctly identifies it as a random ranker, and its AUC-PR of 0.001 matches the base rate — the expected performance of a classifier with no discrimination ability. The LogisticRegression model accepts a reduction in accuracy (from 0.999 to 0.926) in exchange for meaningful Recall (0.850) and an AUC-PR two orders of magnitude above the baseline.
 
-**Theoretical connection**: The DummyClassifier exploits the base rate problem (Section 3.3). Its accuracy equals $1 - \pi$, which is very high when fraud is rare. The F1 score of zero correctly identifies it as useless — not because F1 is the optimal metric, but because it conditions on the positive class (through Recall and Precision), which accuracy does not.
+**Theoretical connection**: The DummyClassifier exploits the base rate problem (Section 3.3). Its accuracy equals $1 - \pi$, which is very high when fraud is rare. The F1 score of zero correctly identifies it as useless — not because F1 is the optimal metric, but because it conditions on the positive class (through Recall and Precision), which accuracy does not. Notably, AUC-PR provides the most honest single-number summary: the DummyClassifier scores 0.001 (the base rate) while LogisticRegression scores 0.142.
 
 ---
 
 ### Experiment B — ROC vs. Precision-Recall Curves
 
-**Theoretical claim**: In the imbalanced regime, models that appear similar on a ROC curve are revealed to be substantially different on a Precision-Recall curve.
+**Theoretical claim**: In the imbalanced regime, models that appear similar on a ROC curve are revealed to be substantially different on a Precision-Recall curve. Moreover, the model ranking itself can differ between the two spaces.
 
-**Setup**: Three models are evaluated — `LogisticRegression`, `RandomForestClassifier`, and a weak `DecisionTreeClassifier` with shallow depth. ROC and PR curves are plotted for all three.
+**Setup**: Three models are evaluated — `LogisticRegression`, `RandomForestClassifier`, and a weak `DecisionTreeClassifier` (depth = 2) — on the synthetic fraud dataset (n = 100,000; fraud rate = 0.1%; 5 informative features out of 20). Both ROC and PR curves are plotted with identical square aspect ratios for direct visual comparison. Curves include markers for distinction in greyscale printing.
 
 **Figure**:
 
 ![Experiment B — Part 1: ROC curves for three models.](../figures/exp_b_roc_curves.png)
 
-*Figure 2. ROC curves (True Positive Rate vs. False Positive Rate) for three classifiers on the synthetic fraud dataset. The area between the three curves appears compressed in the upper-left region; visual separation is moderate. All models achieve AUC-ROC well above the random baseline (diagonal). The differences in quality are present but not visually pronounced.*
+*Figure 2. ROC curves for three classifiers. AUC-ROC values are compressed: Logistic Regression (0.951), Random Forest (0.917), Weak Classifier (0.876). All models appear competitive in ROC space. The ranking suggests Logistic Regression is the best model.*
 
 **Figure**:
 
 ![Experiment B — Part 2: Precision-Recall curves for three models.](../figures/exp_b_pr_curves.png)
 
-*Figure 3. Precision-Recall curves for the same three classifiers. The horizontal dashed baseline marks the base rate $\pi$ (the AUC-PR of a random classifier). The vertical separation between models is substantially more pronounced here than on the ROC curve. The weaker classifier's curve drops sharply at relatively low recall levels, a degradation that is largely invisible in Figure 2.*
+*Figure 3. Precision-Recall curves for the same three classifiers. The horizontal baseline marks the base rate (annotated with arrow). AUC-PR values are far more spread: Random Forest (0.426), Weak Classifier (0.409), Logistic Regression (0.122). The ranking is reversed: the model that appeared best in ROC space is worst in PR space. Vertical lines mark the recall targets used in Experiments D and E.*
 
-**Observation**: The ROC curves for the three models are visually compressed in a way that understates the differences in classification quality. The PR curves reveal a sharper ordering, particularly at the recall levels relevant for fraud detection (0.80+). The weakest model's steep precision decline at moderate recall is not apparent from AUC-ROC alone.
+**Observation**: The ROC and PR curves produce **opposite model rankings**. In ROC space, Logistic Regression leads (AUC-ROC = 0.951); in PR space, it is the weakest model (AUC-PR = 0.122). This inversion occurs because the linear model struggles with the non-linear decision boundary created by the reduced feature set (5 of 20 features are informative), but its discrimination across the full score distribution — which ROC measures — remains strong. The PR curve, which is sensitive to precision at the relevant operating range, reveals this weakness.
 
-**Theoretical connection**: This result follows directly from the argument in Section 7.2. The ROC curve's FPR axis normalises false positives by the total number of negatives, which are overwhelmingly numerous. Small FPR differences on the ROC plot correspond to large absolute differences in false positive counts — a distinction that the PR curve makes visible.
+**Theoretical connection**: This result is a stronger-than-expected confirmation of Section 7.2. Davis and Goadrich (2006) proved that models can be separated in PR space while appearing identical in ROC space. Here we observe the more dramatic case: models are **inversely ranked** across the two spaces. The ROC curve's FPR axis normalises false positives by the number of negatives, which are overwhelmingly numerous (99,900 legitimate transactions). A large absolute increase in false positives — which directly affects precision — produces only a marginal increase in FPR.
 
 ---
 
@@ -367,41 +367,43 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 
 **Theoretical claim**: The default threshold of $\tau = 0.5$ is rarely optimal under asymmetric costs. The cost-optimal threshold $\tau^*$ shifts the operating point towards higher Recall at the cost of lower Precision, reducing expected cost.
 
-**Setup**: A `LogisticRegression` model is evaluated at three operating points: $\tau = 0.5$ (default), the F1-optimal threshold (maximises F1 on the training set), and the cost-optimal threshold $\tau^* = C_{FP} / (C_{FP} + C_{FN})$ using the cost values in `config.yaml`. A threshold sweep plot and confusion matrices for all three thresholds are shown.
+**Setup**: A `LogisticRegression` model is evaluated at three operating points: the default threshold ($\tau = 0.5$), the F1-optimal threshold (found by grid search), and the cost-optimal threshold $\tau^* = C_{FP} / (C_{FP} + C_{FN})$ using the cost values in `config.yaml` ($C_{FP}$ = \$5, $C_{FN}$ = \$200). A threshold sweep plot and confusion matrices for all three thresholds are shown.
 
 **Figure**:
 
-![Experiment C — Part 1: Threshold sweep showing Precision, Recall, F1, and expected cost as a function of threshold.](../figures/exp_c_threshold_sweep.png)
+![Experiment C — Part 1: Threshold sweep showing Precision, Recall, and F1 as a function of threshold.](../figures/exp_c_threshold_sweep.png)
 
-*Figure 4. Threshold sweep for a LogisticRegression model on the synthetic fraud dataset. Precision, Recall, and F1 are plotted as a function of the decision threshold $\tau$. Vertical lines mark the default threshold ($\tau = 0.5$), the F1-optimal threshold, and the cost-optimal threshold $\tau^*$. The default threshold of 0.5 produces near-zero recall — the model flags almost no transactions as fraud at this threshold, because few transactions receive a score above 0.5 on a severely imbalanced problem.*
+*Figure 4. Threshold sweep for a LogisticRegression model. Precision, Recall, and F1 are plotted as functions of the decision threshold. Vertical lines mark three operating points: the default threshold ($\tau = 0.5$), the F1-optimal threshold ($\tau = 0.990$), and the cost-optimal threshold ($\tau^* = 0.024$). Precision and F1 remain near zero for most of the threshold range and only rise steeply above $\tau = 0.9$, indicating that on this highly imbalanced problem, the model's score distribution is concentrated near 1.0 for fraud cases.*
 
 **Figure**:
 
 ![Experiment C — Part 2: Confusion matrices at three different thresholds.](../figures/exp_c_confusion_matrices.png)
 
-*Figure 5. Confusion matrices (row-normalised) for a LogisticRegression model at three decision thresholds: $\tau = 0.5$ (default), the F1-optimal threshold, and the cost-optimal threshold $\tau^*$. Each matrix shows both raw counts and normalised rates. Moving from default to cost-optimal, True Positive Rate (Recall) increases substantially while the False Positive Rate also increases — a trade-off explicitly governed by the cost ratio $C_{FN}/C_{FP}$.*
+*Figure 5. Confusion matrices (row-normalised) at the three operating points. At $\tau = 0.5$ (left): Recall = 0.850 but Precision = 0.011 (1,470 false positives). At $\tau = 0.990$ / F1-optimal (centre): Recall drops to 0.400 and Precision rises to 0.078 (94 false positives). At $\tau^* = 0.024$ / cost-optimal (right): Recall increases to 0.900 with Precision = 0.003 (5,824 false positives). Each matrix shows both raw counts and row-normalised rates.*
 
-**Observation**: At $\tau = 0.5$, the model catches few frauds — most fraud transactions receive scores below 0.5 given the extreme imbalance, and the model defaults to predicting legitimate. At $\tau^*$ (approximately 0.03), Recall increases dramatically while Precision decreases but remains above the random baseline. The F1-optimal threshold is between the two: it finds the peak of the F1 curve, which does not correspond to the cost-optimal operating point.
+**Observation**: The three thresholds produce qualitatively different confusion matrices. The default threshold ($\tau = 0.5$) achieves 85% recall but at the cost of 1,470 false positives — a Precision of just 1.1%. The F1-optimal threshold ($\tau = 0.990$) reduces false positives drastically (to 94) but sacrifices recall to 40%, missing most frauds. The cost-optimal threshold ($\tau^* = 0.024$) maximises recall (90%) at the expense of 5,824 false positives — the correct trade-off given that each missed fraud costs 40 times more than a false alarm.
 
-**Theoretical connection**: This is a direct empirical confirmation of Section 4.3: the default threshold encodes the implicit assumption $C_{FP} = C_{FN}$, which is false here. The cost-optimal threshold follows from the derivation in Section 4.2 and produces a qualitatively different confusion matrix.
+A notable result is that the F1-optimal threshold is 0.990 — far above the default of 0.5. This is not an error; it reflects the model's score distribution under extreme class imbalance. The vast majority of scores are near zero (for legitimate transactions), and the F1 harmonic mean peaks only when the threshold is high enough to substantially reduce false positives.
+
+**Theoretical connection**: This is a direct empirical confirmation of Section 4.3: the default threshold encodes the implicit assumption $C_{FP} = C_{FN}$, which is false here. The cost-optimal threshold follows from the derivation in Section 4.2 and produces a qualitatively different confusion matrix. The gap between the F1-optimal and cost-optimal thresholds (0.990 vs. 0.024) illustrates how far the F1 criterion diverges from the economically justified operating point.
 
 ---
 
 ### Experiment D — Precision@Recall at Business-Defined Targets
 
-**Theoretical claim**: Different business contexts imply different recall requirements, and the precision achievable at each requirement is a model property that should be evaluated explicitly.
+**Theoretical claim**: Different business contexts imply different recall requirements, and the precision achievable at each requirement is a model property that should be evaluated explicitly. The trade-off has direct financial consequences.
 
-**Setup**: A `LogisticRegression` and a `RandomForestClassifier` are evaluated at multiple recall targets $r \in \lbrace 0.70, 0.80, 0.90, 0.95 \rbrace$. For each model and each target, Precision@$r$ is computed. The trade-off between Recall target and achievable Precision is shown as a bar chart.
+**Setup**: A `RandomForestClassifier` (the best model from Experiment B by AUC-PR) is evaluated at five recall targets: $r \in \lbrace 0.75, 0.80, 0.85, 0.90, 0.95 \rbrace$. Precision, false positive count, and false negative count are computed at each operating point. The expected business cost ($C_{FP}$ = \$5, $C_{FN}$ = \$200) is annotated on the figure.
 
 **Figure**:
 
-![Experiment D: Precision@Recall for two models at multiple business-defined recall targets.](../figures/exp_d_precision_at_recall.png)
+![Experiment D: Precision@Recall at five business-defined recall targets with cost annotations.](../figures/exp_d_precision_at_recall.png)
 
-*Figure 6. Precision@Recall for LogisticRegression and RandomForestClassifier at recall targets of 70%, 80%, 90%, and 95%. For both models, precision decreases as the recall target increases. The gap between models varies with the recall target: at some recall levels, one model may be preferred; at others, the order reverses. This motivates evaluating models at the business-relevant recall target rather than summarising performance across all thresholds.*
+*Figure 6. Left panel: Precision at each recall target. Precision declines from 0.072 at r = 0.75 to 0.011 at r = 0.95. Right panel: False positive and false negative counts, with expected cost annotations above each group. At r = 0.75, the model generates 193 false positives and 5 false negatives (total cost: \$1,965). At r = 0.90, false positives jump to 1,480 and the cost quadruples to \$8,000. The transition between r = 0.85 and r = 0.90 marks a sharp inflection point in the cost curve.*
 
-**Observation**: Precision at lower recall targets is substantially higher than at high recall targets for both models. The relative performance gap between models depends on the recall target: a model that delivers better precision at $r = 0.80$ may not maintain that advantage at $r = 0.95$. The business-appropriate recall target therefore determines which model to deploy.
+**Observation**: Precision declines steadily from r = 0.75 to r = 0.85 (7.2% to 5.7%), but drops sharply at r = 0.90 (to 0.8%) as the model exhausts its high-confidence positive predictions and begins flagging low-confidence transactions. The cost analysis reveals an inflection point: below r = 0.85, the total expected cost is approximately \$2,000; above r = 0.90, it jumps to \$8,000. This non-linearity means that the business decision between 85% and 90% recall has a 4x cost impact — information that is invisible in a summary metric like AUC-PR.
 
-**Theoretical connection**: This experiment operationalises Section 8.2: $r$ is a business decision, and Precision@$r$ is the metric that reflects model quality at that decision point. The full PR curve (Figure 3) is the complete trade-off frontier; Precision@$r$ is the specific operating point on that frontier.
+**Theoretical connection**: This experiment operationalises Section 8.2: $r$ is a business decision, and Precision@$r$ is the metric that reflects model quality at that decision point. The cost annotations connect directly to the cost matrix framework in Section 4.1, translating abstract confusion matrix counts into monetary terms. The full PR curve (Figure 3) is the complete trade-off frontier; Precision@$r$ is the specific operating point on that frontier.
 
 ---
 
@@ -409,17 +411,17 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 
 **Theoretical claim**: Ranking models by F1 and ranking them by Precision@$r$ can produce different orderings. When a recall floor is fixed by the business, the F1-based ranking may recommend the wrong model.
 
-**Setup**: Four models (`DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, `DecisionTreeClassifier`) are ranked by multiple metrics: Accuracy, AUC-ROC, AUC-PR, F1, and Precision@$r$ for $r \in \lbrace 0.70, 0.80, 0.90 \rbrace$. Rankings are displayed as a heatmap.
+**Setup**: Five model variants are trained — three Logistic Regression configurations (balanced, C = 0.01, C = 10) and two Random Forest configurations (depth = 5, depth = 15) — all with balanced class weights. Each model is ranked by seven metrics: F1 (best achievable across thresholds), AUC-PR, and Precision@$r$ for $r \in \lbrace 0.75, 0.80, 0.85, 0.90, 0.95 \rbrace$. Results are displayed as an annotated heatmap with per-cell rankings and divergence highlighting.
 
 **Figure**:
 
-![Experiment E: Model ranking comparison across multiple metrics.](../figures/exp_e_ranking_comparison.png)
+![Experiment E: Model ranking comparison across seven evaluation metrics.](../figures/exp_e_ranking_comparison.png)
 
-*Figure 7. Heatmap showing the score (not rank) of each model under each evaluation metric. Darker cells indicate higher scores. Rank ordering (from best to worst) is not necessarily consistent across columns. Models that score well on AUC-ROC may not deliver the best Precision at the required recall floor. The DummyClassifier (always-negative) achieves the highest accuracy, confirming Experiment A.*
+*Figure 7. Heatmap of model scores across seven metrics. Each cell shows the metric value and ordinal rank (e.g., #1, #2). Orange-bordered cells highlight where the top-1 model differs from the F1 ranking. RF (depth = 15) ranks #1 by F1 (0.519); RF (depth = 5) ranks #1 by P@75R (0.146). The divergence is concentrated at the P@75R column — the models that achieve the best F1 trade-off are not the same models that deliver the highest precision at a fixed recall floor.*
 
-**Observation**: The ranking is not stable across metrics. In particular, models that rank well by AUC-ROC or F1 may not be the same models that deliver the highest Precision at the business-relevant recall target. This instability is not noise — it is information. It reveals that the metrics are measuring different things, and that the business context determines which of those things matters.
+**Observation**: The ranking diverges at the P@75R column. RF (depth = 15) is the best model by F1 (0.519) and AUC-PR (0.449), but RF (depth = 5) delivers nearly twice the precision at 75% recall (0.146 vs. 0.074). This means that if the business requires at least 75% of frauds to be caught, the F1-recommended model would produce roughly twice as many false alarms as the P@75R-recommended model. The three Logistic Regression variants are consistently weaker across all metrics, confirming that the ranking divergence is not an artefact of weak models — it occurs between the two best-performing models in the pool.
 
-**Theoretical connection**: This experiment ties together Sections 5 through 8. The metric landscape is not a set of interchangeable measurements; it is a set of answers to different questions. Choosing the right metric requires choosing the right question — which is a business decision, not a technical one.
+**Theoretical connection**: This experiment is the empirical core of the article's thesis. It ties together Sections 5 through 8: F1 (Section 5) and Precision@Recall (Section 8) answer different questions, and when those questions have different answers, the choice of metric determines which model gets deployed. The heatmap makes this concrete: the same set of models, the same dataset, the same train-test split — but a different metric selects a different model. This is not noise; it is information about the misalignment between F1's implicit equal-cost assumption and the business's actual operating constraints.
 
 ---
 
@@ -433,14 +435,14 @@ The choice of evaluation metric follows from answering a small set of questions 
 
 | Question | Answer | Recommended Metric |
 |---|---|---|
-| Are class distributions balanced ($\pi \approx 0.5$)? | Yes | Accuracy, F1 |
-| Are class distributions balanced ($\pi \approx 0.5$)? | No | Continue below |
-| Is a business recall floor defined (e.g., "catch at least X% of frauds")? | Yes | Precision@$r$, AUC-PR |
+| Are class distributions balanced? | Yes | Accuracy, F1 |
+| Are class distributions balanced? | No | Continue below |
+| Is a business recall floor defined? | Yes | Precision@r, AUC-PR |
 | Is a business recall floor defined? | No | AUC-PR, F1 |
-| Are error costs explicitly estimated ($C_{FP}$, $C_{FN}$)? | Yes | Cost-optimal threshold + Precision@$r^*$ |
-| Are error costs explicitly estimated? | No | AUC-PR as ranking metric; F1 at F1-optimal threshold for deployment |
+| Are error costs explicitly estimated? | Yes | Cost-optimal threshold + Precision@r\* |
+| Are error costs explicitly estimated? | No | AUC-PR (ranking); F1 at F1-optimal threshold |
 | Is model ranking the goal (no fixed threshold)? | Yes | AUC-PR |
-| Is threshold selection the goal? | Yes | PR curve + cost-optimal $\tau^*$ |
+| Is threshold selection the goal? | Yes | PR curve + cost-optimal threshold |
 
 ### 10.2 Specific recommendations for fraud detection
 
