@@ -71,7 +71,7 @@ def run(config: dict) -> None:
         metric_keys,
         config,
         title="The Accuracy Trap",
-        subtitle="Accuracy is misleading; AUC-PR reveals the dummy classifier's true performance",
+        subtitle=f"Six metrics for a majority-class classifier vs. Logistic Regression (fraud rate = {base_rate:.1%})",
     )
     save_figure(fig, "exp_a_accuracy_trap", config)
 

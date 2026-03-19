@@ -87,6 +87,27 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased] — Phase 4: Article Writing
+
+### Added
+- `article/notation.md` — Complete notation glossary with all symbols used across
+  sections and figures: random variables, confusion matrix counts, evaluation metrics,
+  threshold and cost parameters, and probability notation conventions.
+- `article/references.bib` — BibTeX reference file with all cited works: Bayes (1763),
+  Davis & Goadrich (2006), Fawcett (2006), Saito & Rehmsmeier (2015), Hastie et al.
+  (2009), Green & Swets (1966), Dal Pozzolo et al. (2015), and Kaggle dataset citation.
+- `article/metrics-that-matter.md` — First complete draft of the full article. Sections:
+  Abstract, Introduction, The Confusion Matrix (probabilistic reading), Bayes' Theorem
+  and the Base Rate Problem, The Asymmetry of Errors (cost matrix + optimal threshold
+  derivation), F1 and the F-beta Family, The ROC Curve (definition + SDT origin +
+  imbalance caveat), The Precision-Recall Curve (definition + AUC-PR + baseline),
+  Precision@Recall (formal definition + business parameter + cost-theory connection +
+  F1 vs P@R distinction), Experiments (A through E with figures and captions),
+  A Framework for Choosing the Right Metric (decision table + fraud recommendations +
+  common mistakes), Conclusion, and References.
+
+---
+
 *Tags correspond to phase milestones:*
 - `v0.0-init` — Phase 0 merged to main
 - `v0.1-theory` — Phase 1 merged to main
