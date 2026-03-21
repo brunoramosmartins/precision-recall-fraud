@@ -8,7 +8,7 @@
 
 ## Abstract
 
-Fraud detection is an imbalanced classification problem in which two types of errors carry fundamentally different consequences: missing a fraud costs far more than blocking a legitimate transaction. Despite this asymmetry, F1 score — which treats both error types as equally costly — remains the default evaluation metric in most practitioner workflows. This article argues that F1 is not wrong, but that its assumptions are rarely made explicit; and that when those assumptions are violated, it produces misleading model rankings. Starting from a probabilistic reading of the confusion matrix, we derive precision and recall as conditional probabilities and connect them to Bayes' theorem. We show that class imbalance is not a data problem but a base rate problem, and that the optimal decision threshold follows directly from the ratio of error costs. We then map the full metric landscape — ROC curves, Precision-Recall curves, and Precision@Recall — showing that each metric encodes a different assumption about the operating context. A suite of reproducible experiments on a synthetic fraud dataset (100,000 transactions, 0.1% fraud rate) confirms that metric choice changes model rankings, that the default threshold of 0.5 is rarely optimal, and that Precision@Recall is the most operationally honest metric when a business recall target is defined. The article closes with a decision framework: a set of practical questions whose answers lead unambiguously to the right metric for a given deployment context.
+Fraud detection is an imbalanced classification problem in which two types of errors carry fundamentally different consequences: missing a fraud costs far more than blocking a legitimate transaction. Despite this asymmetry, F1 score — which treats both error types as equally costly — remains the default evaluation metric in most practitioner workflows. This article argues that F1 is not wrong, but that its assumptions are rarely made explicit; and that when those assumptions are violated, it produces misleading model rankings. Starting from a probabilistic reading of the confusion matrix, we derive precision and recall as conditional probabilities and connect them to Bayes' theorem. We show that class imbalance is not a data problem but a base rate problem, and that the optimal decision threshold follows directly from the ratio of error costs. We then map the full metric landscape — ROC curves, Precision-Recall curves, and Precision@Recall — showing that each metric encodes a different assumption about the operating context. A suite of reproducible experiments on a synthetic fraud dataset confirms that metric choice changes model rankings, that the default threshold of 0.5 is rarely optimal, and that ranking models by F1 versus Precision@Recall can select different winners — meaning that the choice of metric, not the choice of algorithm, determines which model gets deployed. The article closes with a decision framework: a set of practical questions whose answers lead unambiguously to the right metric for a given deployment context.
 
 ---
 
@@ -136,7 +136,7 @@ Every binary prediction system implicitly or explicitly encodes costs for each c
 
 Concretely: if the average transaction value at risk in a fraud is \$500 and the cost of a false alarm (investigation + customer service + lost transaction value) is \$15, then $C_{FN} \approx 500$ and $C_{FP} \approx 15$. The ratio is approximately 33:1.
 
-These numbers are illustrative. The exact values vary by institution, card network rules, and liability agreements. What matters for this derivation is the **ratio** $C_{FN} / C_{FP}$, not the absolute values.
+These numbers are illustrative. The exact values vary by institution, card network rules, and liability agreements. What matters for this derivation is the **ratio** $C_{FN} / C_{FP}$, not the absolute values. (The experiments in Section 9 use $C_{FN} = 200$ and $C_{FP} = 5$ — a 40:1 ratio — as defined in `config.yaml`.)
 
 ### 4.2 The optimal threshold
 
@@ -233,9 +233,7 @@ AUC-ROC has a clean probabilistic interpretation: it is the probability that the
 
 ### 6.2 Historical origin: Signal Detection Theory
 
-ROC analysis was not invented for machine learning. It originated in **Signal Detection Theory**, developed during World War II to analyse radar operator performance. Given a noisy signal, how often does the operator correctly detect an enemy aircraft (TPR) versus incorrectly report a false alarm (FPR)? The same question arises in radiology (tumour detection), seismology (earthquake identification), and fraud detection.
-
-The original ROC context is instructive: the operator was a human decision-maker facing the same asymmetric cost problem we are addressing. A missed enemy aircraft (False Negative) had very different consequences from a false alarm (False Positive) on the radar. Signal detection theory developed the notion of an optimal operating point on the ROC curve that depended on those costs and on the base rate — the same quantities we derived in Sections 3 and 4.
+ROC analysis originated not in machine learning but in **Signal Detection Theory**, developed during World War II to evaluate radar operators: how often does an operator correctly detect an enemy aircraft (TPR) versus report a false alarm (FPR)? The context is instructive because the operator faced the same asymmetric cost problem we are addressing — a missed aircraft had far graver consequences than a false alarm — and the theory already established that the optimal operating point on the ROC curve depends on costs and the base rate, the same quantities derived in Sections 3 and 4.
 
 ### 6.3 A critical caveat: ROC and class imbalance
 
@@ -337,6 +335,8 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 
 **Theoretical connection**: The DummyClassifier exploits the base rate problem (Section 3.3). Its accuracy equals $1 - \pi$, which is very high when fraud is rare. The F1 score of zero correctly identifies it as useless — not because F1 is the optimal metric, but because it conditions on the positive class (through Recall and Precision), which accuracy does not. Notably, AUC-PR provides the most honest single-number summary: the DummyClassifier scores 0.001 (the base rate) while LogisticRegression scores 0.142.
 
+Having established that accuracy is unreliable, the next question is whether the metrics that replace it — AUC-ROC and AUC-PR — always agree on which model is better.
+
 ---
 
 ### Experiment B — ROC vs. Precision-Recall Curves
@@ -360,6 +360,8 @@ All experiments use the same dataset split: 80% training, 20% test, stratified b
 **Observation**: The ROC and PR curves produce **opposite model rankings**. In ROC space, Logistic Regression leads (AUC-ROC = 0.951); in PR space, it is the weakest model (AUC-PR = 0.122). This inversion occurs because the linear model struggles with the non-linear decision boundary created by the reduced feature set (5 of 20 features are informative), but its discrimination across the full score distribution — which ROC measures — remains strong. The PR curve, which is sensitive to precision at the relevant operating range, reveals this weakness.
 
 **Theoretical connection**: This result is a stronger-than-expected confirmation of Section 7.2. Davis and Goadrich (2006) proved that models can be separated in PR space while appearing identical in ROC space. Here we observe the more dramatic case: models are **inversely ranked** across the two spaces. The ROC curve's FPR axis normalises false positives by the number of negatives, which are overwhelmingly numerous (99,900 legitimate transactions). A large absolute increase in false positives — which directly affects precision — produces only a marginal increase in FPR.
+
+The ranking inversion shows that *which* metric we use matters. But even within a single model, the choice of *threshold* produces dramatically different operating profiles — as the next experiment demonstrates.
 
 ---
 
@@ -387,6 +389,8 @@ A notable result is that the F1-optimal threshold is 0.990 — far above the def
 
 **Theoretical connection**: This is a direct empirical confirmation of Section 4.3: the default threshold encodes the implicit assumption $C_{FP} = C_{FN}$, which is false here. The cost-optimal threshold follows from the derivation in Section 4.2 and produces a qualitatively different confusion matrix. The gap between the F1-optimal and cost-optimal thresholds (0.990 vs. 0.024) illustrates how far the F1 criterion diverges from the economically justified operating point.
 
+The threshold experiment shows that the operating point matters enormously. In practice, however, the business does not choose a threshold directly — it chooses a recall target. The next experiment translates recall targets into precision and cost.
+
 ---
 
 ### Experiment D — Precision@Recall at Business-Defined Targets
@@ -404,6 +408,8 @@ A notable result is that the F1-optimal threshold is 0.990 — far above the def
 **Observation**: Precision declines steadily from r = 0.75 to r = 0.85 (7.2% to 5.7%), but drops sharply at r = 0.90 (to 0.8%) as the model exhausts its high-confidence positive predictions and begins flagging low-confidence transactions. The cost analysis reveals an inflection point: below r = 0.85, the total expected cost is approximately \$2,000; above r = 0.90, it jumps to \$8,000. This non-linearity means that the business decision between 85% and 90% recall has a 4x cost impact — information that is invisible in a summary metric like AUC-PR.
 
 **Theoretical connection**: This experiment operationalises Section 8.2: $r$ is a business decision, and Precision@$r$ is the metric that reflects model quality at that decision point. The cost annotations connect directly to the cost matrix framework in Section 4.1, translating abstract confusion matrix counts into monetary terms. The full PR curve (Figure 3) is the complete trade-off frontier; Precision@$r$ is the specific operating point on that frontier.
+
+Experiment D evaluated a single model at multiple recall targets. The final experiment asks the decisive question: when multiple models compete, does the choice of metric change which model wins?
 
 ---
 
@@ -522,7 +528,7 @@ For the author: this article was written in parallel with learning. The next ite
 
 [7] Dal Pozzolo, A., Caelen, O., Johnson, R.A., & Bontempi, G. (2015). Calibrating Probability with Undersampling for Unbalanced Classification. *2015 IEEE Symposium Series on Computational Intelligence*, 159–166. https://doi.org/10.1109/SSCI.2015.33
 
-[8] ULB Machine Learning Group (2018). *Credit Card Fraud Detection* [Dataset]. Kaggle. https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+[8] ULB Machine Learning Group (2018). *Credit Card Fraud Detection* [Dataset]. Kaggle. https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud — *Note: this article uses a synthetic dataset rather than the ULB dataset. The synthetic design allows full control over the number of informative features, base rate, and class separation, making metric behaviour easier to isolate and reproduce. The ULB dataset is cited as the canonical real-world reference for imbalanced fraud detection.*
 
 ---
 
