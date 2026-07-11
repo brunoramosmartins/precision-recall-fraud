@@ -1,3 +1,11 @@
+---
+title: "Not All Errors Cost the Same"
+description: "Bayesian foundations of evaluation metrics for fraud detection: from F1 to Precision@Recall."
+date: 2026-03-19
+category: machine-learning
+reading_time: "25 min"
+---
+
 # Not All Errors Cost the Same
 
 **Bayesian Foundations of Evaluation Metrics for Fraud Detection: from F1 to Precision@Recall**
